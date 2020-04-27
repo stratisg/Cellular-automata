@@ -44,8 +44,8 @@ plt.plot(size, x, '.')
 y=x
 data=[x]
 for time in t[1::]:
-    y1=[cell_rule(num, neigh, x, i, sz) for i in range(sz)]
-    y2=[cell_rule(num2, neigh2, x, i, sz2) for i in range(sz, sz+sz2)]
+    y1=[cell_rule(num, neigh, x, i, sz+sz2) for i in range(sz)]
+    y2=[cell_rule(num2, neigh2, x, i, sz+sz2) for i in range(sz, sz+sz2)]
     y1=np.array(y1)
     y2=np.array(y2)
     y=np.append(y1, y2)
