@@ -17,10 +17,12 @@ def cell_rule(num, neigh, x, index, sz):
     ind=int(np.sum(exp*data))
     a=rule[digits-ind]
     return a
+#####
 
 sz=int(input('Provide the length of the chain:\n'))
 ic=int(input('Provide the initial condition. Choose from 0-%d:\n' %2**sz))
-neigh=int(input('Provide the number of nearest neighbors who can influence your state:\n'))
+neigh=int(input('Provide the number of nearest neighbors who can influence',\
+                'your state:\n'))
 x=[]
 for i in range(sz-1, -1, -1): 
     x.append(ic//2**i)
@@ -32,7 +34,8 @@ t=np.linspace(0,tmax, tmax+1)
 plt.plot(size, x, '.')
 y=x
 data=[x]
-num=int(input('Provide the number of the rule you would like to use. Choose from 0-%d:\n' %(2**(2**(2*neigh+1))-1))) # Rule we are going to use
+num=int(input('Provide the number of the rule you would like to use. Choose'\
+              'from 0-%d:\n' %(2**(2**(2*neigh+1))-1))) 
 for time in t[1::]:
     y=[cell_rule(num, neigh, x, i, sz) for i in range(sz)]
     x=y
