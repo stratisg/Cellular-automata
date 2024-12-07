@@ -29,6 +29,7 @@ class PlotTool:
             plt.legend(frameon=False)
         plt.xlabel(self.xlabel)
         plt.ylabel(self.ylabel)
+        plt.tight_layout()
         self.save_fig(figname)
         
     def save_fig(self, figname):
@@ -36,8 +37,3 @@ class PlotTool:
         plt.savefig(f"{self.pics_dir}/{figname}.png", dpi=self.dpi)
         plt.close()
 
-# def plot_evolution()
-#     plt.figure("Evolution")
-#     plt.imshow(data, cmap=plt.cm.binary)
-#     plt.plot(LATTICE, x + moment + 1, ".")
-# 
