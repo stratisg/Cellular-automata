@@ -1,5 +1,6 @@
 import numpy as np
-import matplotlib.pyplot as plt
+from visualization import PlotTool
+
 
 # TODO: Change variable names to meaningful names.
 def cell_rule(num, neigh, x, index, sz):
@@ -19,7 +20,7 @@ def cell_rule(num, neigh, x, index, sz):
     return a
 
 if __name__ == "__main__":
-    SZ = int(5e3)
+    SZ = int(1e3)
     IC = 50
     NEIGH = 1
     x = []
@@ -27,20 +28,24 @@ if __name__ == "__main__":
         x.append(IC // 2**i)
         IC = IC % (2**i) 
     x = np.array(x)
-    size = np.arange(SZ)
+    LATTICE = np.arange(SZ)
     T_MAX = int(2e3)
     l_moment = np.linspace(0, T_MAX, T_MAX + 1)
-    plt.figure("Evolution")
-    plt.plot(size, x, ".")
     y = x
     data = [x]
     num = 110
+    XLABEL = "Time"
+    YLABEL = "Position"
+    DPI = 600
+    PICS_DIR = "../pics"
+    plot_evolution = PlotTool(XLABEL, YLABEL, PICS_DIR, DPI)
     for moment in l_moment[1:]:
         y = [cell_rule(num, NEIGH, x, i, SZ) for i in range(SZ)]
         x = y
-        plt.plot(size, x + moment + 1, ".")
         data.append(y)
-    plt.figure("Entire History")
-    plt.imshow(data, cmap=plt.cm.binary)
-    plt.show()
+    PLOT_TYPE = "image"
+    LABEL = None
+    FIGNAME = "cellular_automato_1d"
+    data = np.transpose(np.array(data))
+    plot_evolution.plot_figure(data, PLOT_TYPE, LABEL, FIGNAME)
 
