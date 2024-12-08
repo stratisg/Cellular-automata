@@ -1,4 +1,5 @@
 import numpy as np
+import numpy.random as rnd
 from visualization import PlotTool
 from cellular_automaton import get_rule, Automaton
 
@@ -28,7 +29,21 @@ automaton.initialize(INITIAL_COND)
 data = np.zeros((T_MAX, N_SITES))
 data[0] = automaton.lattice.copy()
 plot_evolution = PlotTool(XLABEL, YLABEL, PICS_DIR, DPI)
+l_time_transition = np.arange(T_MAX // 10, T_MAX, T_MAX // 10)
+RNG_SEED = 1960
+rng = rnd.default_rng(RNG_SEED)
+flip_digits = rng.choice(digits + 1, size=len(l_time_transition))
+i_transition = 0
+print(f"Initial rule {rule_args['l_rule']}")
 for time_ in l_times[1:]:
+    # Flip one digit from the l_rule binary string to simulate the
+    # evolution of a rule.
+    if time_ in l_time_transition:
+        flip_ = flip_digits[i_transition]
+        rule_args["l_rule"][flip_] = (l_rule[flip_] + 1) % 2
+        print(f"New rule {rule_args['l_rule']}")
+        automaton.update_rule(rule_args)
+        i_transition +=1
     automaton.update()
     data[time_] = automaton.get_configuration()
 plot_evolution.plot_figure(data, PLOT_TYPE, LABEL, FIGNAME)

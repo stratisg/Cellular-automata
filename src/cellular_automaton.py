@@ -3,11 +3,10 @@ import numpy as np
 
 class Automaton:
     """The cellular automaton class."""
-    def __init__(self, neigh, rule_fn, rule_args, geometry):
+    def __init__(self, neigh, rule_args, geometry):
         self.neigh = neigh
         self.digits = 2**(2 * neigh + 1) - 1
-        self.rule_fn = rule_fn
-        self.rule_args = rule_args
+        self.__rule_args__ = rule_args.copy()
         self.geometry = geometry
         self.lattice = np.zeros(self.geometry)
 
@@ -25,10 +24,21 @@ class Automaton:
 
         return self.current_config
 
-    def update_rule(self, rule_fn, rule_args):
+    def rule_fn(self, neighbor_vals, l_rule, digits, neigh):
+        """
+        The cellular automato governing rule.
+        """
+        # Convert the binary string of the neighboring data into a decimal
+        # number. This decimal number corresponds to index of the binary
+        # representation of the rule.
+        exp = np.array([2**i for i in range(2 * neigh, -1, -1)])
+        ind = int(np.sum(exp * neighbor_vals))
+
+        return l_rule[digits - ind]
+
+    def update_rule(self, rule_args):
         """Update the rule governing the cellular automaton."""
-        self.rule_fn = rule_fn
-        self.rule_args = rule_args
+        self.__rule_args__ = rule_args.copy()
 
     def update(self):
         """
@@ -40,8 +50,9 @@ class Automaton:
              [past_config[(i_site + k) % self.geometry]
               for k in range(-self.neigh, self.neigh + 1)]
             )
-            self.lattice[i_site] = self.rule_fn(neighbor_vals,
-                                                **self.rule_args)
+            self.lattice[i_site] = self.rule_fn(
+                neighbor_vals, **self.__rule_args__
+            )
 
 
 def get_rule(rule_num, digits):
@@ -52,18 +63,4 @@ def get_rule(rule_num, digits):
         rule_num %= (2**i)
 
     return l_rule
-
-
-def rule_vanilla(neighbor_vals, l_rule, digits, neigh):
-    """
-    The cellular automato governing rule.
-    """
-    # Convert the binary string of the neighboring data into a decimal
-    # number. This decimal number corresponds to index of the binary
-    # representation of the rule.
-    exp = np.array([2**i for i in range(2 * neigh, -1, -1)])
-    ind = int(np.sum(exp * neighbor_vals))
-    a = l_rule[digits - ind]
-    
-    return a
 
