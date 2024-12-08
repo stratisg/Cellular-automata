@@ -25,6 +25,11 @@ class Automaton:
 
         return self.current_config
 
+    def update_rule(self, rule_fn, rule_args):
+        """Update the rule governing the cellular automaton."""
+        self.rule_fn = rule_fn
+        self.rule_args = rule_args
+
     def update(self):
         """
         Update lattice configuration given the rule and current configuration.

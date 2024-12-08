@@ -5,19 +5,19 @@ from cellular_automaton import get_rule, rule_vanilla, Automaton
 
 # Define the system's  geometry.
 # Number of sites.
-N_SITES = 500
+N_SITES = 200
 # Initial condition. We provide the indices of the sites with value 1.
-INITIAL_COND = [250]
+INITIAL_COND = [100]
 # Nearest neighbors used to update current site.
 NEIGH = 1
 digits = 2**(2 * NEIGH + 1) - 1
-T_MAX = 1000
+T_MAX = 400
 RULE_NUM = 110
 l_rule = get_rule(RULE_NUM, digits)
 rule_fn = rule_vanilla
 rule_args = {"l_rule": l_rule, "digits": digits, "neigh": NEIGH}
-XLABEL = "Time"
-YLABEL = "Position"
+XLABEL = "Position"
+YLABEL = "Time"
 DPI = 600
 PICS_DIR = "../pics"
 PLOT_TYPE = "image"
@@ -32,6 +32,5 @@ plot_evolution = PlotTool(XLABEL, YLABEL, PICS_DIR, DPI)
 for time_ in l_times[1:]:
     automaton.update()
     data[time_] = automaton.get_configuration()
-data = np.transpose(np.array(data))
 plot_evolution.plot_figure(data, PLOT_TYPE, LABEL, FIGNAME)
 
