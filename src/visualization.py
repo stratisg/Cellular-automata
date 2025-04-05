@@ -32,6 +32,12 @@ class PlotTool:
         plt.tight_layout()
         self.save_fig(figname)
         
+    def animate_evolution(self):
+        """
+        Animate evolution of automaton over time.
+        """
+        pass
+
     def save_fig(self, figname):
         """Save figure in the corresponding directory."""
         plt.savefig(f"{self.pics_dir}/{figname}.png", dpi=self.dpi)

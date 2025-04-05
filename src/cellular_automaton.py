@@ -5,39 +5,48 @@ from utilities import convert_to_decimal, flatten_list
 
 class Automaton:
     """The cellular automaton class."""
-    def __init__(self, update_rule, geometry, radius):
+    def __init__(self, update_rule, geometry, radius, n_states):
+        # TODO: Avoid magic numbers.
+        # TODO: Allow for generalization to multi-state.
+        self.n_states = n_states
         self.update_rule = update_rule
-        self.lattice = self.create_lattice(geometry)
+        self.geometry = geometry
+        self.lattice = self._create_lattice(geometry)
         self.radius = radius
-        self.find_neighbors()
+        self.neighbors = self._find_neighbors()
 
-    def create_lattice(self, geometry):
+    def _create_lattice(self, geometry):
         """
         Create the lattice  based on the given geometry.
 
         The geometry can be a list with the indices of each lattice
-        site or a list with two tuples that contain the lattice vectors
-        and its bounds. These tuples will be used to construct the
-        lattice.
+        site or a list with two tuples. The first tuple contain the
+        lattice vectors. The second tuple contains the lattice's bounds.
+        These tuples will be used to construct the lattice.
 
-        :param geometry list: Information about the lattice.
+        :param: geometry list: Information about the lattice.
+        :return: array lattic: Lattice.
         """
         if len(geometry) > 2:
-            lattice = geometry
-            self.lattice_dim = lattice.shape[1]
+            lattice = np.zeros_like(geometry)
+            if len(geometry.shape) > 1:
+                lattice_dim = geometry.shape[1]
+            else:
+                lattice_dim = 1
         else:
-            self.lattice_vectors = geometry[0]
-            self.lattice_bounds = geometry[1]
-            print(f"Lattice bounds {self.lattice_bounds}")
-            self.lattice_dim = len(geometry[1])
+            # TODO: Under construction.
+            lattice_vectors = geometry[0]
+            lattice_bounds = geometry[1]
+            # print(f"Lattice bounds {lattice_bounds}")
+            lattice_dim = len(geometry[1])
 
             # Initial lattice site from which we will construct the rest.
-            lattice = [[np.zeros(self.lattice_dim)]]
-            print("Lattice")
-            print(lattice)
+            lattice = [[np.zeros(lattice_dim)]]
+            # print("Lattice")
+            # print(lattice)
             # Take the lattice sites generated last and create new sites.
             lattice_new = []
-            for vector in self.lattice_vectors:
+            for vector in lattice_vectors:
                 site_new += vector
                 # Variable that indicates if site is within lattice
                 # bounds.
@@ -45,21 +54,82 @@ class Automaton:
                 # Check if the new site is within the lattice
                 # bounds.
                 for i_site, site_component in enumerate(site_new):
-                    if site_component > self.lattice_bounds[i_site]:
+                    if site_component > lattice_bounds[i_site]:
                         bound_toggle = False
                 if bound_toggle:
                     lattice_new.append(site_new)
             if len(lattice_new):
                 lattice.append(lattice_new)
-            print(39 * "+")
+            # print(39 * "+")
             lattice = flatten_list(lattice)
-        print(79 * "=")
-        print("Lattice")
-        print(lattice)
-        print(79 * "=")
-
+        # print(79 * "=")
+        # print("Lattice")
+        # print(lattice)
+        # print(79 * "=")
+        
         return lattice
 
+    def initialize(self, initial_cond):
+        """
+        Initialize the lattice.
+
+        :param str initial_cond: Initial condition.
+        """ 
+        self.lattice[initial_cond] = 1
+
+    def evolve(self, n_time):
+        """
+        Evolve the lattice over a period of time.
+
+        :param: int n_time: Number of time steps.
+        """
+        evolution = [self.get_configuration()]
+        for i_time in range(1, n_time):
+            self.update()
+            evolution.append(self.get_configuration())
+
+        return evolution
+
+    # TODO: Verify that this function actually works correctly.
+    def update(self):
+        """
+        Update lattice configuration given the rule and current configuration.
+        """
+        past_config = self.get_configuration()
+        for i_site, site_ in enumerate(past_config):
+            cell_indices = self.neighbors[i_site]
+            cell = past_config[cell_indices]
+            neighbor_vals = np.array([
+                past_config[(i_site + k) % len(self.lattice)]
+                for k in range(-self.radius, self.radius + 1)]
+            )
+            # TODO: Turn this to a function.
+            decimal_rep = convert_to_decimal(neighbor_vals,
+                                             n_states=self.n_states)
+            rule_ind = len(self.update_rule)- 1 - decimal_rep
+            update_ = self.update_rule[rule_ind]
+            self.lattice[i_site] = update_ 
+
+    def _find_neighbors(self):
+        """
+        Find all sites within a certain radius from each lattice site.
+        """
+        neighbors = []
+        for i_site, site in enumerate(self.lattice):
+            cell = []
+            for i_neighbor, neighbor in enumerate(self.lattice):
+                diff = i_site - i_neighbor
+                # TODO: Allow flexibility on boundary conditions.
+                # Assuming periodic boundary conditions.
+                # TODO: Generalize to more than one dimension.
+                if diff > len(self.lattice) // 2:
+                    diff -= len(self.lattice) // 2
+                if np.linalg.norm(diff) <= self.radius:
+                    cell.append(i_neighbor)
+            neighbors.append(cell)
+
+        return neighbors
+            
     def visualize_lattice(self):
         """
         Visualize lattice.
@@ -69,29 +139,6 @@ class Automaton:
             plt.scatter(lattice[:, 0], lattice[:, 1])
         plt.show()
 
-    def initialize(self, initial_cond):
-        """
-        Set value to one at all the indices in the array intial_cond.
-        """ 
-        self.lattice[initial_cond] = 1 
-
-    def find_neighbors(self):
-        """
-        Find all sites within a certain radius from each lattice site.
-        """
-        neighbors = [[] for _ in self.lattice]
-        for i_site, site in enumerate(self.lattice):
-            for i_neighbor, neighbor in enumerate(self.lattice):
-                # Exclude the sites themselves.
-                if i_site == i_neighbor:
-                    continue
-                diff = site - neighbor
-                if np.linalg.norm(diff) <= self.radius:
-                    neighbors[i_site].append(neighbor)
-
-        self.neighbors = neighbors
-            
-
     def get_configuration(self):
         """
         Get current lattice configuration.
@@ -100,22 +147,8 @@ class Automaton:
 
         return current_config
 
-    def update(self):
-        """
-        Update lattice configuration given the rule and current configuration.
-        """
-        past_config = self.get_configuration()
-        for i_site in range(self.geometry):
-            neighbor_vals = np.array(
-             [past_config[(i_site + k) % self.geometry]
-              for k in range(-self.neigh, self.neigh + 1)]
-            )
-            self.lattice[i_site] = self.rule_fn(
-                neighbor_vals, **self._rule_args
-            )
 
-
-def get_lookup_table(rule_num, string_length, n_states=2):
+def get_lookup_table(rule_num, cell, n_states=2):
     """
     Define update rule according to its numerical representation.
     
@@ -150,17 +183,17 @@ def get_lookup_table(rule_num, string_length, n_states=2):
     000 | 0 -> 0
 
     :param int rule_num: Decimal representation of the rule.
-    :param int string_length: String length used to update cell's value.
+    :param int cell: Cell used to update cell's value.
     :param int n_states: The number of values the cell can take.
     :returns : look-up table
     :rtype list
     """
     # TODO: Raise an error when the number of states and the string
     # length string are not compatible.
-    l_rule = []
-    for i in range(string_length, -1, -1):
-        l_rule.append(rule_num // n_states**i)
-        rule_num %= (n_states**i)
+    l_rule = np.zeros(n_states ** cell, dtype=int)
+    for i_rule in range(n_states ** cell - 1, -1, -1):
+        l_rule[i_rule] = rule_num // n_states ** i_rule
+        rule_num %= (n_states ** i_rule)
 
     return l_rule
 

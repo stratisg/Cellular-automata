@@ -1,6 +1,7 @@
 """
 Helper functions.
 """
+import numpy as np
 
 
 def flatten_list(list_original):
@@ -16,6 +17,27 @@ def flatten_list(list_original):
             list_flat.append(item)
 
     return list_flat
+
+
+def convert_representation(init_rep, n_exponent, base=2):
+    """
+    Convert a decimal number to its binary representation.
+
+    :param int init_rep: Decimal representation.
+    :param int n_exponent: Length of final representation.
+    :param int base: Base of representation. 
+
+    :returns str binary_rep: Binary representation.
+    """
+    if not n_exponent:
+        n_exponent = int(np.log(init_rep) / np.log(base)) + 1
+    binary_rep = np.zeros(n_exponent, dtype=int)
+    for exponent in range(n_exponent - 1, -1, -1):
+        val_ = base ** exponent
+        binary_rep[n_exponent - 1 - exponent] = init_rep // val_
+        init_rep %= val_
+
+    return binary_rep
 
 
 def convert_to_decimal(values_str, n_states):

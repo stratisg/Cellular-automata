@@ -4,6 +4,7 @@ Test module cellular_automaton.
 import numpy as np
 from cellular_automaton import Automaton
 from cellular_automaton import get_lookup_table
+from visualization import PlotTool
 
 
 test_success = 0
@@ -25,6 +26,15 @@ automaton = Automaton(lookup_table, GEOMETRY, RADIUS)
 automaton.visualize_lattice()
 print("Neighbors to each lattice site.")
 print(automaton.neighbors)
+automaton.initialize([2, 2])
+PICS_DIR = "../pics/tests"
+DPI= 600
+plot_tool = PlotTool("Position x", "Position y", PICS_DIR, DPI)
+PLOT_TYPE = "image"
+LABEL = None 
+FIGNAME = "test_plot_image"
+plot_tool.plot_figure(automaton.lattice, PLOT_TYPE, LABEL, FIGNAME)
+
 # Use the geometry info.
 # GEOMETRY = (((1, 0), (0, 1)), (5, 5))
 # RADIUS = 1
